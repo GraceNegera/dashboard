@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="images/logos.png" type="image/x-icon">
+    <title>My Dashboard</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN for charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Inter font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for the theme toggle icon and delete icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    <style>
+        .all{
+                        background-color: #061429;
+
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Smooth transition for theme change */
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Class to apply dark theme styles */
+        .dark-theme {
+            background-color: #1F2937;
+            color: #F3F4F6;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 256px; /* 64 * 4px = 256px, equivalent to h-64 in Tailwind */
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<div class="all">
+<body class="bg-gray-50 text-gray-900">
+
+    <div class="min-h-screen p-4 sm:p-6 lg:p-8">
+        <!-- Dashboard Header -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-blue-600">
+                My Dashboard
+            </h1>
+            <div class="flex items-center space-x-4 mt-2 sm:mt-0">
+                <!-- Theme Toggle Button -->
+                <button id="theme-toggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 focus:outline-none transition-colors duration-300">
+                    <i class="fas fa-moon" id="theme-icon"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Metric Card 1: Total Messages -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 flex flex-col items-center justify-center transition-transform hover:scale-105 duration-300 ease-in-out">
+                <div id="total-messages" class="text-4xl font-bold text-green-500 mb-2">
+                    <div class="h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+                </div>
+                <div class="text-lg text-gray-600 dark:text-gray-400">Total Messages</div>
+            </div>
+
+            <!-- Metric Card 2: New Submissions -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 flex flex-col items-center justify-center transition-transform hover:scale-105 duration-300 ease-in-out">
+                <div id="new-submissions" class="text-4xl font-bold text-yellow-500 mb-2">
+                    <div class="h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+                </div>
+                <div class="text-lg text-gray-600 dark:text-gray-400">New This Week</div>
+            </div>
+
+            <!-- Metric Card 3: Site Visitors (Mock) -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 flex flex-col items-center justify-center transition-transform hover:scale-105 duration-300 ease-in-out">
+                <div id="total-visitors" class="text-4xl font-bold text-purple-500 mb-2">
+                    <!-- This metric is mocked as it's not in the data -->
+                    1,234
+                </div>
+                <div class="text-lg text-gray-600 dark:text-gray-400">Total Visitors</div>
+            </div>
+        </div>
+
+        <!-- Main Content (2-column layout) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Left Side (Chart and Tables) -->
+            <div class="md:col-span-2 flex flex-col gap-6">
+                <!-- Page Views Chart -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
+                        Page Views
+                    </h2>
+                    <div class="chart-container">
+                        <canvas id="page-views-chart"></canvas>
+                    </div>
+                </div>
+                <!-- Contact Form Submissions Table -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
+                        Contact Form Submissions
+                    </h2>
+                    <div id="submissions-table" class="overflow-x-auto">
+                        <!-- Table will be rendered here by JavaScript -->
+                        <div class="flex justify-center items-center h-48">
+                            <svg class="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <!-- Message Form Submissions Table -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
+                        Message Form Submissions
+                    </h2>
+                    <div id="message-submissions-table" class="overflow-x-auto">
+                        <!-- Table will be rendered here by JavaScript -->
+                        <div class="flex justify-center items-center h-48">
+                            <svg class="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side (Recent Notifications) -->
+            <div class="md:col-span-1 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
+                    Recent Notifications
+                </h2>
+                <div id="notifications-list" class="flex flex-col gap-4">
+                    <!-- Notifications will be rendered here by JavaScript -->
+                    <div class="flex justify-center items-center h-48">
+                        <svg class="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Modal for Confirmation -->
+    <div id="confirm-modal" class="modal-overlay">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl max-w-sm mx-auto">
+            <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">Confirm Deletion</h2>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">Are you sure you want to delete this submission? This action cannot be undone.</p>
+            <div class="flex justify-end space-x-4">
+                <button id="cancel-delete" class="px-4 py-2 text-sm font-semibold rounded-lg text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none">
+                    Cancel
+                </button>
+                <button id="confirm-delete" class="px-4 py-2 text-sm font-semibold rounded-lg text-white bg-red-600 hover:bg-red-700 focus:outline-none">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // SheetDB API URLs for your two spreadsheets
+            const sheetUrls = [
+                'https://sheetdb.io/api/v1/5i9pa0h9jr2o1',
+                'https://sheetdb.io/api/v1/vbublszl40fsw'
+            ];
+            
+            // Elements for the confirmation modal
+            const confirmModal = document.getElementById('confirm-modal');
+            const confirmBtn = document.getElementById('confirm-delete');
+            const cancelBtn = document.getElementById('cancel-delete');
+            let itemToDelete = null;
+
+            // Mock data for elements not present in the Google Sheet data
+            const mockPageViewsData = [
+                { name: 'Jan', views: 4000 },
+                { name: 'Feb', views: 3000 },
+                { name: 'Mar', views: 2000 },
+                { name: 'Apr', views: 2780 },
+                { name: 'May', views: 1890 },
+                { name: 'Jun', views: 2390 },
+                { name: 'Jul', views: 3490 },
+            ];
+
+            /**
+             * Helper function to format a date string.
+             * @param {string} dateString The date to format.
+             * @returns {string} The formatted date string.
+             */
+            const formatDate = (dateString) => {
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                try {
+                    return new Date(dateString).toLocaleDateString(undefined, options);
+                } catch (e) {
+                    return dateString; // Return original if date is invalid
+                }
+            };
+
+            /**
+             * Renders an HTML table with submission data.
+             * @param {string} containerId The ID of the container element.
+             * @param {Array<Object>} submissionsData The data to display in the table.
+             * @param {number} sheetIndex The index of the sheet (0 or 1).
+             */
+            const renderSubmissionsTable = (containerId, submissionsData, sheetIndex) => {
+                const tableContainer = document.getElementById(containerId);
+                if (submissionsData.length === 0) {
+                    tableContainer.innerHTML = `<p class="text-center text-gray-500 py-4">No submissions found.</p>`;
+                    return;
+                }
+                
+                // Determine headers based on the container ID
+                const isContactTable = containerId === 'submissions-table';
+                const headers = isContactTable ? ['Full Name', 'Email', 'Messages', 'Date'] : ['Email', 'Comments', 'Date'];
+                
+                let tableHtml = `
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                ${headers.map(header => `<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">${header}</th>`).join('')}
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                `;
+
+                submissionsData.forEach((item) => {
+                    const email = item['Email'];
+                    const date = item['Date'];
+                    tableHtml += `
+                        <tr>
+                            ${isContactTable ? `
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">${item['Full Name'] || '-'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-500 dark:text-blue-300">${email || '-'}</td>
+                                <td class="px-6 py-4 whitespace-normal text-sm text-gray-500 dark:text-gray-400">${item['Messages'] || '-'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${formatDate(date || '')}</td>
+                            ` : `
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-500 dark:text-blue-300">${email || '-'}</td>
+                                <td class="px-6 py-4 whitespace-normal text-sm text-gray-500 dark:text-gray-400">${item['Comments'] || '-'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${formatDate(date || '')}</td>
+                            `}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <button class="delete-btn text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-600" data-email="${email}" data-date="${date}" data-sheet-index="${sheetIndex}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableHtml += `
+                        </tbody>
+                    </table>
+                `;
+                tableContainer.innerHTML = tableHtml;
+            };
+
+            /**
+             * Renders the recent notifications list.
+             * @param {Array<Object>} notificationsData The data to display.
+             */
+            const renderNotifications = (notificationsData) => {
+                const notificationsList = document.getElementById('notifications-list');
+                if (notificationsData.length === 0) {
+                    notificationsList.innerHTML = `<p class="text-center text-gray-500 py-4">No new notifications.</p>`;
+                    return;
+                }
+                
+                let notificationsHtml = '';
+                notificationsData.forEach(item => {
+                    const dateText = item.timestamp === 0 ? 'Date not available' : formatDate(item.date);
+                    notificationsHtml += `
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 shadow-sm">
+                            <h3 class="font-semibold text-gray-900 dark:text-gray-100">${item.title}</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">${dateText}</p>
+                        </div>
+                    `;
+                });
+                notificationsList.innerHTML = notificationsHtml;
+            };
+            
+            /**
+             * Deletes a submission from the Google Sheet by clearing the row.
+             * @param {string} email The email to identify the row.
+             * @param {string} date The date to identify the row.
+             * @param {number} sheetIndex The index of the sheet.
+             */
+            const deleteSubmission = async (email, date, sheetIndex) => {
+                const sheetUrl = sheetUrls[sheetIndex];
+                try {
+                    const response = await fetch(`${sheetUrl}/Email/${email}/Date/${date}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Deletion failed. Please check the console for details.');
+                    }
+
+                    // Reload the dashboard to show the updated data
+                    await fetchDataAndRenderDashboard();
+                    
+                } catch (error) {
+                    console.error('Error deleting submission:', error);
+                    // You could add a simple message to the user here.
+                    alert('Error: Could not delete the submission. Check the console for details.');
+                }
+            };
+
+            /**
+             * Fetches data from all specified SheetDB URLs and renders the dashboard.
+             */
+            const fetchDataAndRenderDashboard = async () => {
+                try {
+                    // Fetch data from both URLs concurrently
+                    const fetchPromises = sheetUrls.map(url => fetch(url));
+                    const responses = await Promise.all(fetchPromises);
+
+                    // Check for network errors
+                    for (const response of responses) {
+                        if (!response.ok) throw new Error(`Network response was not ok from URL: ${response.url}`);
+                    }
+                    
+                    // Parse JSON data from both responses
+                    const dataArrays = await Promise.all(responses.map(res => res.json()));
+
+                    // Combine data from both sheets into one array
+                    const allData = dataArrays.flat();
+
+                    // Filter the combined data for the two tables
+                    const contactSubmissions = dataArrays[0].filter(item => item['Full Name'] || (item['Email'] && item['Messages']));
+                    const messageSubmissions = dataArrays[1].filter(item => item['Email'] && item['Comments']);
+
+                    // Prepare notifications data
+                    const notifications = allData
+                        .map(item => {
+                            const date = new Date(item['Date']);
+                            const timestamp = isNaN(date.getTime()) ? 0 : date.getTime(); 
+                            
+                            let title = 'New Submission'; // Fallback title
+                            if (item['Full Name'] && item['Messages']) {
+                                title = `New Contact from ${item['Full Name']}`;
+                            } else if (item['Email'] && item['Comments']) {
+                                title = `New Message from ${item['Email']}`;
+                            }
+                            
+                            return {
+                                title,
+                                date: item['Date'],
+                                timestamp: timestamp
+                            };
+                        })
+                        .sort((a, b) => b.timestamp - a.timestamp); // Sort by date, most recent first
+
+                    // Update metric cards with real data
+                    document.getElementById('total-messages').textContent = allData.length;
+                    const lastWeek = new Date();
+                    lastWeek.setDate(lastWeek.getDate() - 7);
+                    
+                    const newSubmissions = allData.filter(item => {
+                        const itemDate = new Date(item['Date']);
+                        return !isNaN(itemDate) && itemDate > lastWeek;
+                    });
+                    document.getElementById('new-submissions').textContent = newSubmissions.length;
+                    
+                    // Render submissions tables with the filtered data
+                    renderSubmissionsTable('submissions-table', contactSubmissions, 0); // Pass sheet index 0
+                    renderSubmissionsTable('message-submissions-table', messageSubmissions, 1); // Pass sheet index 1
+                    
+                    // Render dynamic notifications list
+                    renderNotifications(notifications);
+
+                    // Render page views chart (using mock data)
+                    const ctx = document.getElementById('page-views-chart').getContext('2d');
+                    // Destroy the previous chart instance if it exists to prevent errors
+                    if (window.myChart) {
+                        window.myChart.destroy();
+                    }
+                    window.myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: mockPageViewsData.map(d => d.name),
+                            datasets: [{
+                                label: 'Views',
+                                data: mockPageViewsData.map(d => d.views),
+                                fill: true,
+                                borderColor: '#3B82F6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: document.body.classList.contains('dark-theme') ? '#1F2937' : '#FFFFFF',
+                                    titleColor: document.body.classList.contains('dark-theme') ? '#E5E7EB' : '#1F2937',
+                                    bodyColor: document.body.classList.contains('dark-theme') ? '#E5E7EB' : '#1F2937',
+                                    borderColor: document.body.classList.contains('dark-theme') ? '#4B5563' : '#E5E7EB',
+                                    borderWidth: 1,
+                                    borderRadius: 16,
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: { color: document.body.classList.contains('dark-theme') ? '#4B5563' : '#E5E7EB' },
+                                    ticks: { color: document.body.classList.contains('dark-theme') ? '#D1D5DB' : '#6B7280' }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    grid: { color: document.body.classList.contains('dark-theme') ? '#4B5563' : '#E5E7EB' },
+                                    ticks: { color: document.body.classList.contains('dark-theme') ? '#D1D5DB' : '#6B7280' }
+                                }
+                            }
+                        }
+                    });
+
+                } catch (error) {
+                    console.error('Failed to fetch data:', error);
+                    document.getElementById('submissions-table').innerHTML = `<p class="text-center text-red-500">Failed to load contact submissions.</p>`;
+                    document.getElementById('message-submissions-table').innerHTML = `<p class="text-center text-red-500">Failed to load message submissions.</p>`;
+                    document.getElementById('total-messages').textContent = 'Error';
+                    document.getElementById('new-submissions').textContent = 'Error';
+                    document.getElementById('notifications-list').innerHTML = `<p class="text-center text-red-500">Failed to load notifications.</p>`;
+                }
+            };
+
+            // Theme toggle logic
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark-theme') {
+                body.classList.add('dark-theme');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                body.classList.add('dark-theme');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            }
+
+            themeToggleBtn.addEventListener('click', () => {
+                const isDark = body.classList.toggle('dark-theme');
+                localStorage.setItem('theme', isDark ? 'dark-theme' : 'light-theme');
+                
+                if (isDark) {
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                } else {
+                    themeIcon.classList.remove('fa-sun');
+                    themeIcon.classList.add('fa-moon');
+                }
+                
+                fetchDataAndRenderDashboard();
+            });
+
+            // Event listener for delete buttons using event delegation
+            document.addEventListener('click', (event) => {
+                const targetBtn = event.target.closest('.delete-btn');
+                if (targetBtn) {
+                    const email = targetBtn.dataset.email;
+                    const date = targetBtn.dataset.date;
+                    const sheetIndex = targetBtn.dataset.sheetIndex;
+                    itemToDelete = { email, date, sheetIndex };
+                    confirmModal.style.display = 'flex';
+                }
+            });
+
+            // Modal button event listeners
+            confirmBtn.addEventListener('click', () => {
+                if (itemToDelete) {
+                    deleteSubmission(itemToDelete.email, itemToDelete.date, itemToDelete.sheetIndex);
+                    confirmModal.style.display = 'none';
+                    itemToDelete = null;
+                }
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                confirmModal.style.display = 'none';
+                itemToDelete = null;
+            });
+            
+            // Initial rendering of the dashboard by fetching data
+            fetchDataAndRenderDashboard();
+        });
+    </script>
+
+</body>
+</html>
