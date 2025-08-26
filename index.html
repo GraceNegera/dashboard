@@ -194,7 +194,7 @@
                 
                 // Determine headers based on the container ID
                 const isContactTable = containerId === 'submissions-table';
-                const headers = isContactTable ? ['Full Name', 'Email', 'Messages', 'Date'] : ['Email', 'Comments', 'Date'];
+                const headers = isContactTable ? ['Full_Name', 'Email', 'Messages', 'Date'] : ['Email', 'Comments', 'Date'];
                 
                 let tableHtml = `
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -212,7 +212,7 @@
                     tableHtml += `
                         <tr>
                             ${isContactTable ? `
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">${item['Full Name'] || '-'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">${item['Full_Name'] || '-'}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-500 dark:text-blue-300">${email || '-'}</td>
                                 <td class="px-6 py-4 whitespace-normal text-sm text-gray-500 dark:text-gray-400">${item['Messages'] || '-'}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${formatDate(date || '')}</td>
@@ -287,8 +287,8 @@
                             const timestamp = isNaN(date.getTime()) ? 0 : date.getTime(); 
                             
                             let title = 'New Submission'; // Fallback title
-                            if (item['Full Name']) { // Check for 'Full Name' to determine if it's a contact form entry
-                                title = `New Contact from ${item['Full Name']}`;
+                            if (item['Full_Name']) { // Check for 'Full Name' to determine if it's a contact form entry
+                                title = `New Contact from ${item['Full_Name']}`;
                             } else if (item['Email']) { // Otherwise, assume it's a message form entry
                                 title = `New Message from ${item['Email']}`;
                             }
@@ -413,3 +413,4 @@
     </script>
 </body>
 </html>
+
